@@ -31,15 +31,16 @@ abundancia_relativa.tudo <- (ps %>% transform_sample_counts(function(x) {x/sum(x
                                spread(Sample, Abundance))
 
 # Por nivel taxonomico
-psr <- tax_glom(ps, "Phylum") #Reemplazar pelo nivel desejado
+psr <- tax_glom(ps_merge, "Kingdom", NArm = F)
 ps0 <- transform_sample_counts(psr, function(x) x / sum(x))
-ps1 <- merge_samples(ps0)
+ps1 <- merge_samples(ps0, 'Group') #PRA JIANINNE O GROUP E ANO E PRA BARBARA PERIODO
 
-write.table(ps1 %>% tax_glom(taxrank = "Phylum") %>% 
-              transform_sample_counts(function(x) {x/sum(x)}) %>% psmelt() %>%
-              select(Phylum, Sample, Abundance) %>% spread(Sample, Abundance), 
-            file = "ps.relative_abundance.phylum.csv", sep = "\t", quote = F, row.names = F, col.names = T)
-
+ps1 <- ps1 %>% tax_glom(taxrank = "Kingdom", NArm = F) %>% 
+  transform_sample_counts(function(x) {x/sum(x)}) %>% psmelt() %>%
+  select(Kingdom, Sample, Abundance) %>%
+  group_by(Kingdom) %>%
+  summarize(Abundance = sum(Abundance))
+write.csv(ps1, "/home/alex/melhoramento_animal/priscilla/abundancia_r_kingdom.csv")
 # Graficos de abundancia
 
 #com filtro
@@ -53,4 +54,4 @@ plot_bar(ps2, fill=tax_level)
 
 # Exemplo
 
-plot_graphic(ps, "Phylum", "Ano")
+plot_graphic(ps_merge, "Kingdom", "Group")
